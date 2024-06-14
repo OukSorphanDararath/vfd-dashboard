@@ -7,9 +7,9 @@ const Button = ({ onClick, text, className, type }) => {
 
   return (
     <button
-      className={`p-3 rounded-2xl ${className} ${
+      className={`p-3 rounded-2xl  ${
         hasBackgroundClass ? "" : "bg-[#032ea2] hover:bg-[#05216f]"
-      }`}
+      } ${className}`}
       onClick={onClick}
       type={type}
     >

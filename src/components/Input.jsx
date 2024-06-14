@@ -13,21 +13,21 @@ const Input = ({
 }) => {
   return (
     <div className="mb-4">
-      <label htmlFor={id} className="inline-block font-semibold mb-1">
-        {label && (
+      {label && (
+        <label htmlFor={id} className="inline-block font-semibold mb-2">
           <span className={`text-red-600 ${isRequired ? "" : "hidden"}`}>
             *
           </span>
-        )}
-        {label}:
-      </label>
+          {label}:
+        </label>
+      )}
       <input
         type="text"
         id={id}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={`mt-2 py-2 px-4 font-normal rounded-xl border-2 border-transparent focus:ring-2 focus:ring-white/10 outline-none ${
+        className={`py-2 px-4 font-normal rounded-xl border-2 border-transparent focus:ring-2 focus:ring-white/10 outline-none ${
           error ? "bg-red-500/30" : "bg-[#323D4E]"
         } ${className} rounded-md w-full`}
         {...props}

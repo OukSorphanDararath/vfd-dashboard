@@ -10,9 +10,8 @@ const Schedule = () => {
   const [shiftName, setShiftName] = useState("");
   const [shiftNameError, setShiftNameError] = useState("");
   const [file, setFile] = useState(null);
-  const [fileName, setFileName] = useState();
-  const [isEditMode, setIsEditMode] = useState();
   const [selectedData, setSelectedData] = useState();
+  const [openDialog, setOpenDialog] = useState(false);
 
   console.log(selectedData);
 
@@ -21,13 +20,8 @@ const Schedule = () => {
   }, []);
 
   useEffect(() => {
-    if (isEditMode === undefined || isEditMode === false) {
-      setShiftName("");
-      setFile(null);
-      setFileName(null);
-      setShiftNameError("");
-    }
-  }, [isEditMode]);
+    if (schedulesData) setSelectedData(schedulesData[0]);
+  }, [schedulesData]);
 
   const getScheduleData = () => {
     axios
@@ -55,9 +49,9 @@ const Schedule = () => {
 
   // const handleDelete = async (id) => {
   //   try {
-  //     const result = await axios.delete("http://localhost:6600/schedules");
+  //     const result = await axios.delete(`http://localhost:6600/schedules/${id}`);
 
-  //     console.log("Form submitted successfully:", result.data);
+  //     console.log("Form delete successfully:", result.data);
   //   } catch (error) {
   //     console.error("Error creating post:", error);
   //   }
@@ -95,85 +89,111 @@ const Schedule = () => {
   };
 
   const handleItemClick = (item) => {
-    setIsEditMode(true);
-    setFileName(item?.pdf);
-    setShiftName(item?.name);
+    // setIsEditMode(true);
     setSelectedData(item);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
   };
 
   return (
     <div className="h-full flex flex-col">
-      {/* <Dialog /> */}
       <h1 className="mb-6 mt-2 font-semibold text-2xl">Schedule</h1>
       <div className="flex h-full gap-6">
         {/* LIST CONTENT */}
         <div className="bg-[#283142] rounded-3xl flex p-4 flex-col w-64">
           <Button
             text={"+ Add New Shift"}
-            onClick={() => setIsEditMode(false)}
-            className={"w-full "}
+            onClick={() => setOpenDialog(true)}
+            className={"w-full"}
           />
-          <>
-            <h6 className="font-semibold mt-8 mb-2 text-lg">Shift</h6>
-            <ul className="flex flex-col">
-              {schedulesData?.map((item) => {
-                return (
-                  <li
-                    className={`border rounded-2xl px-5 py-2 ${
-                      item?._id == selectedData?._id
-                        ? "bg-blue-700/30  border-white/10 text-blue-300"
-                        : "border-transparent"
-                    }`}
-                    key={item?._id}
-                    onClick={() => handleItemClick(item)}
-                  >
-                    {item?.name}
-                  </li>
-                );
-              })}
-            </ul>
-          </>
+          <h6 className="font-semibold mt-6 mb-3 text-lg">Shifts</h6>
+          <ul className="flex flex-col">
+            {schedulesData?.map((item) => {
+              return (
+                <li
+                  className={`border rounded-2xl px-5 py-2 ${
+                    item?._id == selectedData?._id
+                      ? "bg-blue-700/30  border-white/10 text-blue-300"
+                      : "border-transparent"
+                  }`}
+                  key={item?._id}
+                  onClick={() => handleItemClick(item)}
+                >
+                  {item?.name}
+                </li>
+              );
+            })}
+          </ul>
         </div>
         {/* EDIT CONTENT */}
         <div className="bg-[#283142] flex-1 p-10 rounded-3xl">
-          {isEditMode !== undefined && (
+          <form onSubmit={handleSubmit} className="h-full flex flex-col gap-2">
+            <Input
+              id="shiftName"
+              value={selectedData?.name}
+              onChange={handleShiftNameChange}
+              error={shiftNameError}
+              placeholder={"Enter text..."}
+              label={"Shift Name"}
+              isRequired={true}
+            />
+
+            <div className="mb-4 h-full">
+              <FileUpload
+                filename={selectedData?.pdf}
+                fileType="pdf"
+                onFileChange={handleFileChange}
+                allowMultiple={false}
+              />
+            </div>
+
+            <div
+              className={`flex mt-auto justify-end
+                `}
+            >
+              <Button
+                text={"Update"}
+                type="submit"
+                className={"w-52 border-2 border-white/20"}
+              />
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {openDialog && (
+        <Dialog
+          title={"Add a New Shift"}
+          subTitle={"Enter a New Shift Name"}
+          content={
             <form
               onSubmit={handleSubmit}
               className="h-full flex flex-col gap-2"
             >
               <Input
                 id="shiftName"
-                value={shiftName}
+                // value={selectedData?.name}
                 onChange={handleShiftNameChange}
                 error={shiftNameError}
-                placeholder={"Enter text..."}
-                label={"Shift Name"}
+                placeholder={"Enter a name here"}
                 isRequired={true}
               />
 
               <div className="mb-4 h-full">
                 <FileUpload
-                  filename={fileName}
+                  // filename={selectedData?.pdf}
                   fileType="pdf"
                   onFileChange={handleFileChange}
                   allowMultiple={false}
                 />
               </div>
-
-              <div
-                className={`flex mt-auto justify-end
-                `}
-              >
-                <Button
-                  text={"Update"}
-                  type="submit"
-                  className={"w-52 border-2 border-white/20"}
-                />
-              </div>
             </form>
-          )}
-        </div>
-      </div>
+          }
+          onClose={handleCloseDialog}
+        />
+      )}
     </div>
   );
 };
