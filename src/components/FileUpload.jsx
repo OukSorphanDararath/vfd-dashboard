@@ -79,12 +79,12 @@ const FileUpload = ({
   }, [file]);
 
   return (
-    <div className="max-w-lg mx-auto">
+    <div className="w-full h-full mx-auto">
       {!file && !filename ? (
         // Show the upload form if no file is uploaded
         <div
           {...getRootProps()}
-          className={`border-2 text-center border-dashed p-6 rounded-lg cursor-pointer ${
+          className={`border-2 h-full flex flex-col justify-center items-center border-dashed p-6 rounded-xl cursor-pointer ${
             error
               ? "border-red-500 hover:border-red-700"
               : "border-gray-400 hover:border-blue-500"

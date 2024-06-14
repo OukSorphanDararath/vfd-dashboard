@@ -12,19 +12,19 @@ const SideBar = () => {
   ];
 
   return (
-    <div className="border w-64 flex flex-col px-4 pb-4">
+    <div className="bg-[#283142] w-64 flex flex-col px-5 pb-4">
       <div className="h-20 flex items-center mx-auto">
-        <h1 className="text-center ">
+        <h1 className="text-center font-semibold text-lg">
           <NavLink to="/">FD Dashboard</NavLink>
         </h1>
       </div>
-      <ul className="flex flex-col gap-1 mt-4">
+      <ul className="flex flex-col gap-4 mt-4">
         {sideBarContent.map((item) => (
           <NavLink
             to={item.url}
             key={item.id}
-            activeClassName="text-blue-950 bg-white"
-             className="border p-2"
+            activeClassName="text-white bg-[#032ea2]"
+            className="px-5 py-2 rounded-2xl"
           >
             {item.title}
           </NavLink>

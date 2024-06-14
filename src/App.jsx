@@ -14,14 +14,17 @@ import Header from "./components/Header";
 
 function App() {
   return (
-    <div className="flex border overflow-hidden h-screen w-screen">
+    <div className="flex overflow-hidden h-screen w-screen">
       <SideBar />
-      <div className="border w-full flex flex-col border-red-600">
+      <div className=" w-full flex flex-col bg-[#1b2531]">
         <Header />
-        <div className="h-full w-full p-4 border">
+        <div className="h-full w-full p-6">
           <Switch>
             <Route path="/" exact>
-              <>Welcome to PUC Virtual Front Desk, Please select your section  to process.</>
+              <>
+                Welcome to PUC Virtual Front Desk, Please select your section to
+                process.
+              </>
             </Route>
             <Route path="/schedules">
               <Schedule />

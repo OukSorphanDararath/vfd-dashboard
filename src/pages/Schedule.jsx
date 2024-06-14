@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import FileUpload from "../components/FileUpload"; // Adjust the path as necessary
 import axios from "axios";
+import Button from "../components/Button";
+import Dialog from "../components/Dialog";
+import Input from "../components/Input";
 
 const Schedule = () => {
   const [schedulesData, setSchedulesData] = useState();
@@ -9,6 +12,9 @@ const Schedule = () => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState();
   const [isEditMode, setIsEditMode] = useState();
+  const [selectedData, setSelectedData] = useState();
+
+  console.log(selectedData);
 
   useEffect(() => {
     getScheduleData();
@@ -92,56 +98,60 @@ const Schedule = () => {
     setIsEditMode(true);
     setFileName(item?.pdf);
     setShiftName(item?.name);
-    // setSelectedData(item);
+    setSelectedData(item);
   };
 
   return (
     <div className="h-full flex flex-col">
-      <h1 className="mb-4">Schedule</h1>
-      <div className="flex h-full gap-4">
+      {/* <Dialog /> */}
+      <h1 className="mb-6 mt-2 font-semibold text-2xl">Schedule</h1>
+      <div className="flex h-full gap-6">
         {/* LIST CONTENT */}
-        <div className="border flex p-4 flex-col w-64">
-          <button className="border p-2" onClick={() => setIsEditMode(false)}>
-            +Add New Shift
-          </button>
-          <div>
-            <h6 className="font-semibold mt-8">Shift</h6>
-            <ul className="flex flex-col gap-2">
-              {schedulesData?.map((item) => (
-                <li
-                  className="border p-2"
-                  key={item?.id}
-                  onClick={() => handleItemClick(item)}
-                >
-                  {item?.name}
-                </li>
-              ))}
+        <div className="bg-[#283142] rounded-3xl flex p-4 flex-col w-64">
+          <Button
+            text={"+ Add New Shift"}
+            onClick={() => setIsEditMode(false)}
+            className={"w-full "}
+          />
+          <>
+            <h6 className="font-semibold mt-8 mb-2 text-lg">Shift</h6>
+            <ul className="flex flex-col">
+              {schedulesData?.map((item) => {
+                return (
+                  <li
+                    className={`border rounded-2xl px-5 py-2 ${
+                      item?._id == selectedData?._id
+                        ? "bg-blue-700/30  border-white/10 text-blue-300"
+                        : "border-transparent"
+                    }`}
+                    key={item?._id}
+                    onClick={() => handleItemClick(item)}
+                  >
+                    {item?.name}
+                  </li>
+                );
+              })}
             </ul>
-          </div>
+          </>
         </div>
         {/* EDIT CONTENT */}
-        <div className="border flex-1 p-4">
+        <div className="bg-[#283142] flex-1 p-10 rounded-3xl">
           {isEditMode !== undefined && (
-            <form onSubmit={handleSubmit} className="h-full flex flex-col">
-              <div className="mb-4">
-                <label htmlFor="shiftName" className="block">
-                  Shift Name:
-                </label>
-                <input
-                  type="text"
-                  id="shiftName"
-                  value={shiftName}
-                  onChange={handleShiftNameChange}
-                  className={`mt-2 p-2 border ${
-                    shiftNameError ? "bg-red-500/30" : "bg-transparent"
-                  } rounded-md w-full`}
-                />
-                {shiftNameError && (
-                  <p className="text-red-500 text-sm mt-1">{shiftNameError}</p>
-                )}
-              </div>
+            <form
+              onSubmit={handleSubmit}
+              className="h-full flex flex-col gap-2"
+            >
+              <Input
+                id="shiftName"
+                value={shiftName}
+                onChange={handleShiftNameChange}
+                error={shiftNameError}
+                placeholder={"Enter text..."}
+                label={"Shift Name"}
+                isRequired={true}
+              />
 
-              <div className="mb-4">
+              <div className="mb-4 h-full">
                 <FileUpload
                   filename={fileName}
                   fileType="pdf"
@@ -151,41 +161,14 @@ const Schedule = () => {
               </div>
 
               <div
-                className={`flex mt-auto ${
-                  isEditMode ? "justify-between" : "justify-end"
-                }`}
+                className={`flex mt-auto justify-end
+                `}
               >
-                {isEditMode && (
-                  <button
-                    type="button"
-                    className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-700"
-                    onClick={() => {
-                      setShiftName("");
-                      setFile(null);
-                      setShiftNameError(""); // Clear the shift name error if any
-                    }}
-                  >
-                    Delete
-                  </button>
-                )}
-                <div className="flex gap-4">
-                  <button
-                    type="submit"
-                    className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
-                  >
-                    {isEditMode ? "Update" : "Add"}
-                  </button>
-                  <button
-                    type="button"
-                    className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-700"
-                    onClick={() => {
-                      // Clear the shift name error if any
-                      setIsEditMode(undefined);
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
+                <Button
+                  text={"Update"}
+                  type="submit"
+                  className={"w-52 border-2 border-white/20"}
+                />
               </div>
             </form>
           )}
