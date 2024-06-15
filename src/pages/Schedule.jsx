@@ -11,14 +11,20 @@ import Notify from "../components/Notify";
 const Schedule = () => {
   const [schedulesData, setSchedulesData] = useState();
   const [shiftName, setShiftName] = useState("");
+  const [newShiftName, setNewShiftName] = useState("");
   const [shiftNameError, setShiftNameError] = useState("");
+  const [newShiftNameError, setNewShiftNameError] = useState("");
   const [file, setFile] = useState(null);
+  const [newFile, setNewFile] = useState(null);
   const [selectedData, setSelectedData] = useState();
   const [openDialog, setOpenDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isInitialRender, setIsInitailRender] = useState(false);
   const [notify, setNotify] = useState(false);
   const [notifyError, setNotifyError] = useState();
+  const [clearFile, setClearFile] = useState();
+
+  console.log(shiftNameError);
 
   useEffect(() => {
     getScheduleData();
@@ -27,6 +33,8 @@ const Schedule = () => {
   useEffect(() => {
     if (selectedData) {
       setShiftName(selectedData?.name);
+      setShiftNameError("");
+      setClearFile(new Date());
     }
   }, [selectedData]);
 
@@ -53,14 +61,20 @@ const Schedule = () => {
   const handleFileChange = (uploadedFile) => {
     if (uploadedFile === null)
       setSelectedData((prev) => ({ ...prev, pdf: null }));
-    setFile(uploadedFile);
+    if (openDialog) {
+      setNewFile(uploadedFile);
+    } else {
+      setFile(uploadedFile);
+    }
   };
 
-  const handleShiftNameChange = (event) => {
-    setShiftName(event.target.value);
-    if (shiftNameError) {
-      setShiftNameError(""); // Clear error when user starts typing
+  const handleShiftNameChange = (event, isNew) => {
+    if (isNew) {
+      setNewShiftName(event.target.value);
+    } else {
+      setShiftName(event.target.value);
     }
+    if (shiftNameError) setShiftNameError(""); // Clear error when user starts typing
   };
 
   const handleDelete = async (id) => {
@@ -88,14 +102,22 @@ const Schedule = () => {
     if (!shiftName.trim()) {
       setShiftNameError("Shift name is required.");
       isValid = false;
+    } else if (!newShiftName.trim() && openDialog) {
+      setNewShiftNameError("Shift name is required.");
+      isValid = false;
     }
 
     if (isValid) {
       // Log form data; files are optional
       // console.log("Form submitted successfully:", { name, file });
       const formData = new FormData();
-      formData.append("name", shiftName);
-      formData.append("file", file);
+      if (id) {
+        formData.append("name", shiftName);
+        formData.append("file", file);
+      } else {
+        formData.append("name", newShiftName);
+        formData.append("file", newFile);
+      }
 
       let result = {};
 
@@ -116,6 +138,7 @@ const Schedule = () => {
 
         console.log("Form submitted successfully:", result.data);
         setOpenDialog(false);
+        setNewShiftName("");
         getScheduleData();
         setNotify(true);
       } catch (error) {
@@ -185,6 +208,7 @@ const Schedule = () => {
                   fileType="pdf"
                   onFileChange={handleFileChange}
                   allowMultiple={false}
+                  onClearFile={clearFile}
                 />
               </div>
 
@@ -212,8 +236,9 @@ const Schedule = () => {
             <form className="h-full flex flex-col gap-2">
               <Input
                 id="shiftName"
-                onChange={handleShiftNameChange}
-                error={shiftNameError}
+                value={newShiftName}
+                onChange={(e) => handleShiftNameChange(e, true)}
+                error={newShiftNameError}
                 placeholder={"Enter a name here"}
                 isRequired={true}
               />
@@ -227,7 +252,11 @@ const Schedule = () => {
               </div>
             </form>
           }
-          onClose={() => setOpenDialog(false)}
+          onClose={() => {
+            setNewShiftName("");
+            setNewShiftNameError("");
+            setOpenDialog(false);
+          }}
           onFormSubmit={(e) => {
             handleSubmit(e);
           }}

@@ -9,10 +9,15 @@ const FileUpload = ({
   fileType,
   onFileChange,
   allowMultiple = false,
+  onClearFile,
 }) => {
   const [file, setFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (onClearFile) setFile(null);
+  }, [onClearFile]);
 
   const onDrop = useCallback(
     (acceptedFiles, rejectedFiles) => {
