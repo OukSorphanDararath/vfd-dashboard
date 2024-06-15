@@ -3,7 +3,14 @@ import Button from "./Button";
 import Backdrop from "./Backdrop";
 import { FaTimes } from "react-icons/fa";
 
-const Dialog = ({ content, title, subTitle, onClose, onFormSubmit }) => {
+const Dialog = ({
+  content,
+  title,
+  subTitle,
+  onClose,
+  onFormSubmit,
+  isSubmitting,
+}) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -47,6 +54,7 @@ const Dialog = ({ content, title, subTitle, onClose, onFormSubmit }) => {
             text={"Save"}
             className={`w-40 border-2 border-white/20`}
             onClick={onFormSubmit}
+            isLoading={isSubmitting}
           />
         </div>
       </div>

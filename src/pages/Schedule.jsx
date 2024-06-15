@@ -7,6 +7,7 @@ import Input from "../components/Input";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import DeleteDialog from "../components/DeleteDialog";
 import Notify from "../components/Notify";
+import Loading from "../components/Loading";
 
 const Schedule = () => {
   const [schedulesData, setSchedulesData] = useState();
@@ -22,6 +23,8 @@ const Schedule = () => {
   const [isInitialRender, setIsInitailRender] = useState(false);
   const [notification, setNotification] = useState({ message: "", type: "" });
   const [clearFile, setClearFile] = useState();
+  const [isSummitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     getScheduleData();
@@ -44,13 +47,16 @@ const Schedule = () => {
   }, [schedulesData]);
 
   const getScheduleData = () => {
+    setIsLoading(true);
     axios
       .get("http://localhost:6600/schedules")
       .then((response) => {
         setSchedulesData(response?.data?.data);
+        setIsLoading(false);
       })
       .catch(() => {
         setNotification({ message: "Error fetching schedules", type: "error" });
+        setIsLoading(false);
       });
   };
 
@@ -71,6 +77,7 @@ const Schedule = () => {
       setShiftName(event.target.value);
     }
     if (shiftNameError) setShiftNameError(""); // Clear error when user starts typing
+    if (newShiftNameError) setNewShiftNameError(""); // Clear error when user starts typing
   };
 
   const handleDelete = async (id) => {
@@ -95,6 +102,7 @@ const Schedule = () => {
   // Handle form submission
   const handleSubmit = async (event, id) => {
     event.preventDefault();
+    setIsSubmitting(true);
     let isValid = true;
 
     if (!shiftName.trim()) {
@@ -141,10 +149,12 @@ const Schedule = () => {
           message: result.data.message,
           type: "success",
         });
+        setIsSubmitting(false);
       } catch (error) {
         setNotification({ message: "Error saving schedule.", type: "error" });
       }
     }
+    setIsSubmitting(false);
   };
 
   return (
@@ -152,78 +162,92 @@ const Schedule = () => {
       <h1 className="mb-6 mt-2 font-semibold text-2xl">Schedule</h1>
       <div className="flex h-full gap-6">
         {/* LIST CONTENT */}
+
         <div className="bg-[#283142] rounded-3xl flex p-4 flex-col w-64">
-          <Button
-            text={"+ Add New Shift"}
-            onClick={() => setOpenDialog(true)}
-            className={"w-full"}
-          />
-          <h6 className="font-semibold mt-6 mb-3 text-lg">Shifts</h6>
-          <ul className="flex flex-col">
-            {schedulesData?.map((item) => {
-              return (
-                <li
-                  className={`border relative rounded-2xl px-5 py-2 cursor-pointer ${
-                    item?._id == selectedData?._id
-                      ? "bg-blue-700/30  border-white/10 text-blue-300"
-                      : "border-transparent"
-                  }`}
-                  key={item?._id}
-                  onClick={() => setSelectedData(item)}
-                >
-                  {item?.name}{" "}
-                  <button
-                    onClick={() => setShowDeleteDialog(true)}
-                    className="absolute right-3 top-2 p-1 rounded-full hover:bg-white/10 hover:text-red-400 "
-                  >
-                    <RiDeleteBin6Line />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          {isLoading ? (
+            <Loading />
+          ) : (
+            <>
+              <Button
+                text={"+ Add New Shift"}
+                onClick={() => setOpenDialog(true)}
+                className={"w-full"}
+              />
+              <h6 className="font-semibold mt-6 mb-3 text-lg">Shifts</h6>
+              <ul className="flex flex-col">
+                {schedulesData?.map((item) => {
+                  return (
+                    <li
+                      className={`border relative rounded-2xl px-5 py-2 cursor-pointer ${
+                        item?._id == selectedData?._id
+                          ? "bg-blue-700/30  border-white/10 text-blue-300"
+                          : "border-transparent"
+                      }`}
+                      key={item?._id}
+                      onClick={() => setSelectedData(item)}
+                    >
+                      {item?.name}{" "}
+                      <button
+                        onClick={() => setShowDeleteDialog(true)}
+                        className="absolute right-3 top-2 p-1 rounded-full hover:bg-white/10 hover:text-red-400 "
+                      >
+                        <RiDeleteBin6Line />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
         </div>
         {/* EDIT CONTENT */}
         <div className="bg-[#283142] flex-1 p-10 rounded-3xl">
-          {schedulesData?.length > 0 ? (
-            <form
-              onSubmit={(e) => {
-                handleSubmit(e, selectedData._id);
-              }}
-              className="h-full flex flex-col gap-2"
-            >
-              <Input
-                id="shiftName"
-                value={shiftName}
-                onChange={handleShiftNameChange}
-                error={shiftNameError}
-                placeholder={"Enter text..."}
-                label={"Shift Name"}
-                isRequired={true}
-              />
-
-              <div className="mb-4 h-full">
-                <FileUpload
-                  filename={selectedData?.pdf}
-                  fileType="pdf"
-                  onFileChange={handleFileChange}
-                  allowMultiple={false}
-                  onClearFile={clearFile}
-                />
-              </div>
-
-              <div className={`flex mt-auto justify-end`}>
-                <Button
-                  text={"Update"}
-                  type="submit"
-                  className={"w-52 border-2 border-white/20"}
-                />
-              </div>
-            </form>
+          {isLoading ? (
+            <Loading />
           ) : (
-            <div className="flex justify-center w-full h-full items-center">
-              No schedule data. Please add a new data.
-            </div>
+            <>
+              {schedulesData?.length > 0 ? (
+                <form
+                  onSubmit={(e) => {
+                    handleSubmit(e, selectedData._id);
+                  }}
+                  className="h-full flex flex-col gap-2"
+                >
+                  <Input
+                    id="shiftName"
+                    value={shiftName}
+                    onChange={handleShiftNameChange}
+                    error={shiftNameError}
+                    placeholder={"Enter text..."}
+                    label={"Shift Name"}
+                    isRequired={true}
+                  />
+
+                  <div className="mb-4 h-full">
+                    <FileUpload
+                      filename={selectedData?.pdf}
+                      fileType="pdf"
+                      onFileChange={handleFileChange}
+                      allowMultiple={false}
+                      onClearFile={clearFile}
+                    />
+                  </div>
+
+                  <div className={`flex mt-auto justify-end`}>
+                    <Button
+                      text={"Update"}
+                      type="submit"
+                      className={"w-52 border-2 border-white/20"}
+                      isLoading={isSummitting}
+                    />
+                  </div>
+                </form>
+              ) : (
+                <div className="flex justify-center w-full h-full items-center">
+                  No schedule data. Please add a new data.
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -261,6 +285,7 @@ const Schedule = () => {
           onFormSubmit={(e) => {
             handleSubmit(e);
           }}
+          isSubmitting={isSummitting}
         />
       )}
 
