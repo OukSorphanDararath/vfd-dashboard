@@ -46,12 +46,16 @@ const Schedule = () => {
     }
   }, [schedulesData]);
 
-  const getScheduleData = () => {
+  const getScheduleData = (isAddNewData) => {
     setIsLoading(true);
     axios
       .get("http://localhost:6600/schedules")
       .then((response) => {
         setSchedulesData(response?.data?.data);
+        if (isAddNewData)
+          setSelectedData(
+            response?.data?.data[response?.data?.data.length - 1]
+          );
         setIsLoading(false);
       })
       .catch(() => {
@@ -144,11 +148,11 @@ const Schedule = () => {
 
         setOpenDialog(false);
         setNewShiftName("");
-        getScheduleData();
         setNotification({
-          message: result.data.message,
+          message: result?.data?.message ?? "Successfully added a new shift",
           type: "success",
         });
+        getScheduleData(id === undefined);
         setIsSubmitting(false);
       } catch (error) {
         setNotification({ message: "Error saving schedule.", type: "error" });
@@ -238,7 +242,7 @@ const Schedule = () => {
                       text={"Update"}
                       type="submit"
                       className={"w-52 border-2 border-white/20"}
-                      isLoading={isSummitting}
+                      isLoading={!openDialog && isSummitting}
                     />
                   </div>
                 </form>
