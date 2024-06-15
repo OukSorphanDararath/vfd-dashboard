@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { IoClose } from "react-icons/io5";
+import { IoIosRemove } from "react-icons/io";
 import Modal from "./Modal.jsx";
+import { BsFiletypePdf } from "react-icons/bs";
 
 const FileUpload = ({
   filename,
@@ -49,7 +50,7 @@ const FileUpload = ({
   );
 
   const removeFile = () => {
-    URL.revokeObjectURL(file.preview);
+    if (file) URL.revokeObjectURL(file?.preview);
     setFile(null);
     setError(""); // Clear error when file is removed
     onFileChange(null); // Notify parent about the file removal
@@ -103,8 +104,8 @@ const FileUpload = ({
         </div>
       ) : (
         // Show the preview of the uploaded file
-        <div className="relative mt-4">
-          <div className="border rounded-lg overflow-hidden">
+        <div className="relative mt-4 rounded-xl bg-[#323D4E]">
+          <div className=" overflow-hidden">
             {fileType === "image" ? (
               <img
                 src={file.preview}
@@ -113,16 +114,19 @@ const FileUpload = ({
                 onDoubleClick={openModal}
               />
             ) : (
-              <div className="text-sm p-4" onDoubleClick={openModal}>
-                PDF: {filename ?? file.name}
+              <div
+                className="text-sm p-4 flex items-center gap-2"
+                onDoubleClick={openModal}
+              >
+                <BsFiletypePdf size={20} /> {filename ?? file.name}
               </div>
             )}
           </div>
           <button
-            className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-700"
+            className="absolute top-3 right-3 bg-red-500 text-white p-1 rounded-full hover:bg-red-700"
             onClick={removeFile}
           >
-            <IoClose size={20} />
+            <IoIosRemove size={20} />
           </button>
         </div>
       )}

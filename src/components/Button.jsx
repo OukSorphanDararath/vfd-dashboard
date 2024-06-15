@@ -2,7 +2,7 @@ import React from "react";
 
 const Button = ({ onClick, text, className, type }) => {
   const hasBackgroundClass = className
-    .split(" ")
+    ?.split(" ")
     .some((cls) => cls.startsWith("bg-"));
 
   return (

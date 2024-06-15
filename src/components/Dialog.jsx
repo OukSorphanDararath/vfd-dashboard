@@ -3,7 +3,7 @@ import Button from "./Button";
 import Backdrop from "./Backdrop";
 import { FaTimes } from "react-icons/fa";
 
-const Dialog = ({ content, title, subTitle, onClose }) => {
+const Dialog = ({ content, title, subTitle, onClose, onFormSubmit }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -23,7 +23,10 @@ const Dialog = ({ content, title, subTitle, onClose }) => {
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
         }`}
       >
-        <button className="rounded-full bg-white/30 p-2 text-whtie absolute top-4 right-4 hover:text-red-700 hover:bg-red-200/50" onClick={onClose}>
+        <button
+          className="rounded-full bg-white/30 p-2 text-whtie absolute top-4 right-4 hover:text-red-700 hover:bg-red-200/50"
+          onClick={onClose}
+        >
           <FaTimes />
         </button>
         {/* HEADER CONTENT */}
@@ -40,7 +43,11 @@ const Dialog = ({ content, title, subTitle, onClose }) => {
             className={`bg-[#283142] w-40 border-2 border-white/20 hover:bg-[#1b2531]`}
             onClick={onClose}
           />
-          <Button text={"Save"} className={`w-40 border-2 border-white/20`} />
+          <Button
+            text={"Save"}
+            className={`w-40 border-2 border-white/20`}
+            onClick={onFormSubmit}
+          />
         </div>
       </div>
     </div>
