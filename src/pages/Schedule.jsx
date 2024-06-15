@@ -20,11 +20,8 @@ const Schedule = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isInitialRender, setIsInitailRender] = useState(false);
-  const [notify, setNotify] = useState(false);
-  const [notifyError, setNotifyError] = useState();
+  const [notification, setNotification] = useState({ message: "", type: "" });
   const [clearFile, setClearFile] = useState();
-
-  console.log(shiftNameError);
 
   useEffect(() => {
     getScheduleData();
@@ -35,6 +32,7 @@ const Schedule = () => {
       setShiftName(selectedData?.name);
       setShiftNameError("");
       setClearFile(new Date());
+      setFile(null);
     }
   }, [selectedData]);
 
@@ -51,10 +49,8 @@ const Schedule = () => {
       .then((response) => {
         setSchedulesData(response?.data?.data);
       })
-      .catch((error) => {
-        console.log(error);
-        setNotifyError("error");
-        setNotify(true);
+      .catch(() => {
+        setNotification({ message: "Error fetching schedules", type: "error" });
       });
   };
 
@@ -83,14 +79,16 @@ const Schedule = () => {
         `http://localhost:6600/schedules/${id}`
       );
 
-      console.log("Form delete successfully:", result.data);
+      // console.log("Form delete successfully:", result.data);
       getScheduleData();
       setShowDeleteDialog(false);
-      setIsInitailRender(false);
-      setNotify(true);
-      // setSelectedData(schedulesData[0]);
+      setSelectedData(schedulesData.length > 0 ? schedulesData[0] : null);
+      setNotification({
+        message: result.data.message,
+        type: "success",
+      });
     } catch (error) {
-      console.error("Error creating post:", error);
+      setNotification({ message: "Error deleting schedule.", type: "error" });
     }
   };
 
@@ -136,13 +134,15 @@ const Schedule = () => {
           );
         }
 
-        console.log("Form submitted successfully:", result.data);
         setOpenDialog(false);
         setNewShiftName("");
         getScheduleData();
-        setNotify(true);
+        setNotification({
+          message: result.data.message,
+          type: "success",
+        });
       } catch (error) {
-        console.error("Error creating post:", error);
+        setNotification({ message: "Error saving schedule.", type: "error" });
       }
     }
   };
@@ -163,7 +163,7 @@ const Schedule = () => {
             {schedulesData?.map((item) => {
               return (
                 <li
-                  className={`border relative rounded-2xl px-5 py-2 ${
+                  className={`border relative rounded-2xl px-5 py-2 cursor-pointer ${
                     item?._id == selectedData?._id
                       ? "bg-blue-700/30  border-white/10 text-blue-300"
                       : "border-transparent"
@@ -255,6 +255,7 @@ const Schedule = () => {
           onClose={() => {
             setNewShiftName("");
             setNewShiftNameError("");
+            setNewFile(null);
             setOpenDialog(false);
           }}
           onFormSubmit={(e) => {
@@ -270,16 +271,12 @@ const Schedule = () => {
         />
       )}
 
-      {notify && (
+      {notification?.message && (
         <Notify
-          message={
-            notifyError
-              ? "Error Fetching Data !"
-              : "Your request was successful!"
-          }
-          type={notifyError}
+          message={notification.message}
+          type={notification.type}
           duration={2000}
-          onDismiss={() => setNotify(false)}
+          onDismiss={() => setNotification({ message: "", type: "" })}
         />
       )}
     </div>
