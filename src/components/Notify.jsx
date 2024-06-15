@@ -32,7 +32,7 @@ const Notify = ({ message, type = "success", duration = 3000, onDismiss }) => {
 
   return (
     <div
-      className={`fixed top-0 left-1/2 transform -translate-x-1/2 p-4 ${backgroundColor} text-white rounded-2xl shadow-lg transition-all duration-300 ease-in-out ${
+      className={`fixed top-0 left-1/2 transform shadow-xl -translate-x-1/2 p-4 ${backgroundColor} text-white rounded-2xl shadow-lg transition-all duration-300 ease-in-out ${
         visible ? "opacity-100 translate-y-4" : "opacity-0 -translate-y-0"
       }`}
       onClick={handleClick}

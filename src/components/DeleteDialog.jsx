@@ -16,7 +16,7 @@ const DeleteDialog = ({ deleteTitle, onCancel, onDelete }) => {
       <Backdrop />
       <div
         className={`bg-[#283142] relative  w-3/12 h-[22rem] z-50 mx-auto rounded-3xl overflow-hidden flex flex-col p-5 gap-3
-        transition-all duration-500 transform ${
+        transition-all duration-300 transform ${
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
         }`}
       >

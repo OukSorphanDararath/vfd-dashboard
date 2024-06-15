@@ -44,6 +44,7 @@ const Schedule = () => {
         setSchedulesData(response?.data?.data);
       })
       .catch((error) => {
+        console.log(error);
         setNotifyError("error");
         setNotify(true);
       });
