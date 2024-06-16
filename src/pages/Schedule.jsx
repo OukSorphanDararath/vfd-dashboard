@@ -20,10 +20,9 @@ const Schedule = () => {
   const [selectedData, setSelectedData] = useState();
   const [openDialog, setOpenDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isInitialRender, setIsInitailRender] = useState(false);
   const [notification, setNotification] = useState({ message: "", type: "" });
   const [clearFile, setClearFile] = useState();
-  const [isSummitting, setIsSubmitting] = useState(false);
+  const [isSummitting, setIsSubmitting] = useState(false);  
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -39,23 +38,22 @@ const Schedule = () => {
     }
   }, [selectedData]);
 
-  useEffect(() => {
-    if (schedulesData?.length > 0 && !isInitialRender) {
-      setSelectedData(schedulesData[0]);
-      setIsInitailRender(true);
-    }
-  }, [schedulesData]);
-
-  const getScheduleData = (isAddNewData) => {
+  const getScheduleData = (id, afterRequest) => {
     setIsLoading(true);
     axios
       .get("http://localhost:6600/schedules")
       .then((response) => {
         setSchedulesData(response?.data?.data);
-        if (isAddNewData)
+        if (id && afterRequest) {
+          setSelectedData(response?.data?.data?.find((x) => x._id === id));
+        } else if (!id && afterRequest) {
           setSelectedData(
             response?.data?.data[response?.data?.data.length - 1]
           );
+        } else {
+          setSelectedData(response?.data?.data[0]);
+        }
+
         setIsLoading(false);
       })
       .catch(() => {
@@ -79,6 +77,7 @@ const Schedule = () => {
       setNewShiftName(event.target.value);
     } else {
       setShiftName(event.target.value);
+      setSelectedData((prev) => ({ ...prev, name: event.target.value }));
     }
     if (shiftNameError) setShiftNameError(""); // Clear error when user starts typing
     if (newShiftNameError) setNewShiftNameError(""); // Clear error when user starts typing
@@ -123,7 +122,7 @@ const Schedule = () => {
       const formData = new FormData();
       if (id) {
         formData.append("name", shiftName);
-        formData.append("file", file);
+        formData.append("file", file ?? selectedData?.pdf);
       } else {
         formData.append("name", newShiftName);
         formData.append("file", newFile);
@@ -152,7 +151,7 @@ const Schedule = () => {
           message: result?.data?.message ?? "Successfully added a new shift",
           type: "success",
         });
-        getScheduleData(id === undefined);
+        getScheduleData(id, true);
         setIsSubmitting(false);
       } catch (error) {
         setNotification({ message: "Error saving schedule.", type: "error" });
