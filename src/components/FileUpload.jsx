@@ -115,7 +115,7 @@ const FileUpload = ({
               <img
                 src={file.preview}
                 alt={file.name}
-                className="w-full h-auto object-cover"
+                className="w-full overflow-hidden max-h-36 object-contain"
                 onDoubleClick={openModal}
               />
             ) : (
