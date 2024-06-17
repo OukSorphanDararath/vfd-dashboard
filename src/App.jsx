@@ -11,6 +11,7 @@ import { Route, Switch } from "react-router-dom";
 import WifiAccess from "./pages/WifiAccess";
 import Faculties from "./pages/Faculties";
 import Header from "./components/Header";
+import AdminCall from "./pages/AdminCall";
 
 function App() {
   return (
@@ -43,6 +44,9 @@ function App() {
             </Route>
             <Route path="/faculties">
               <Faculties />
+            </Route>
+            <Route path="/admin">
+              <AdminCall />
             </Route>
           </Switch>
         </div>

@@ -9,6 +9,7 @@ const SideBar = () => {
     { id: 3, title: "Schedules", url: "/schedules", icon: "" },
     { id: 4, title: "Faculties", url: "/faculties", icon: "" },
     { id: 5, title: "Contacts", url: "/contact", icon: "" },
+    { id: 6, title: "Admin Call", url: "/admin", icon: "" },
   ];
 
   return (
