@@ -28,7 +28,7 @@ const Dialog = ({
       <div
         className={`bg-[#283142] relative border-2 border-white/10 w-7/12 ${
           height ? height : "h-5/6"
-        } z-50 mx-auto rounded-3xl overflow-hidden flex flex-col py-6 px-8 gap-3
+        } z-50 mx-auto rounded-3xl overflow-y-auto  flex flex-col py-6 px-8 gap-3
         transition-all duration-500 transform ${
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
         }`}

@@ -12,7 +12,7 @@ const Input = ({
   ...props
 }) => {
   return (
-    <div className="mb-4">
+    <div className="mb-4 flex-1">
       {label && (
         <label htmlFor={id} className="inline-block font-semibold mb-2">
           <span className={`text-red-600 ${isRequired ? "" : "hidden"}`}>

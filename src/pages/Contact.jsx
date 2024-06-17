@@ -300,26 +300,29 @@ const Contact = () => {
                     label={"Contact Name"}
                     isRequired={true}
                   />
-                  <Input
-                    id="phoneNum"
-                    value={phoneNum}
-                    onChange={handlePhoneNumChange}
-                    error={phoneNumError}
-                    placeholder={"Enter text..."}
-                    label={"Phone Number"}
-                    isRequired={true}
-                  />
-                  <Input
-                    id="contactName"
-                    value={telegram}
-                    onChange={handleTelegramChange}
-                    error={telegramError}
-                    placeholder={"Enter text..."}
-                    label={"Telegram"}
-                    isRequired={true}
-                  />
 
-                  <div className="mb-4 h-full">
+                  <div className="flex gap-4">
+                    <Input
+                      id="phoneNum"
+                      value={phoneNum}
+                      onChange={handlePhoneNumChange}
+                      error={phoneNumError}
+                      placeholder={"Enter text..."}
+                      label={"Phone Number"}
+                      isRequired={true}
+                    />
+                    <Input
+                      id="contactName"
+                      value={telegram}
+                      onChange={handleTelegramChange}
+                      error={telegramError}
+                      placeholder={"Enter text..."}
+                      label={"Telegram"}
+                      isRequired={true}
+                    />
+                  </div>
+
+                  <div className="my-4 h-full">
                     <FileUpload
                       filename={selectedData?.image}
                       fileType="image"
@@ -351,19 +354,10 @@ const Contact = () => {
       {openDialog && (
         <Dialog
           title={"Add a New Contact"}
-          height={"h-[90%]"}
+          height={"h-[92%]"}
           subTitle={"Enter a New Contact Name"}
           content={
             <form className="h-full flex flex-col">
-              {/* <Input
-                id="contactName"
-                value={newContactName}
-                onChange={(e) => handleContactNameChange(e, true)}
-                error={newContactNameError}
-                placeholder={"Enter a name here"}
-                isRequired={true}
-              /> */}
-
               <Input
                 id="contactName-new"
                 value={newContactName}
@@ -373,28 +367,29 @@ const Contact = () => {
                 label={"Contact Name"}
                 isRequired={true}
               />
-              <Input
-                id="phoneNum-new"
-                value={newPhoneNum}
-                onChange={(e) => handlePhoneNumChange(e, true)}
-                error={newPhoneNumError}
-                placeholder={"Enter phone number"}
-                label={"Phone Number"}
-                isRequired={true}
-              />
-              <Input
-                id="telegram-new"
-                value={newTelegram}
-                onChange={(e) => handleTelegramChange(e, true)}
-                error={newTelegramError}
-                placeholder={"Enter telegram username"}
-                label={"Telegram"}
-                isRequired={true}
-              />
-
-              <div className="mb-4 h-full">
+              <div className="flex gap-4">
+                <Input
+                  id="phoneNum-new"
+                  value={newPhoneNum}
+                  onChange={(e) => handlePhoneNumChange(e, true)}
+                  error={newPhoneNumError}
+                  placeholder={"Enter phone number"}
+                  label={"Phone Number"}
+                  isRequired={true}
+                />
+                <Input
+                  id="telegram-new"
+                  value={newTelegram}
+                  onChange={(e) => handleTelegramChange(e, true)}
+                  error={newTelegramError}
+                  placeholder={"Enter telegram username"}
+                  label={"Telegram"}
+                  isRequired={true}
+                />
+              </div>
+              <div className="my-4 h-full">
                 <FileUpload
-                  fileType="pdf"
+                  fileType="image"
                   onFileChange={handleFileChange}
                   allowMultiple={false}
                 />
