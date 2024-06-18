@@ -9,6 +9,8 @@ import DeleteDialog from "../components/DeleteDialog";
 import Notify from "../components/Notify";
 import Loading from "../components/Loading";
 
+const apiBaseUrl = import.meta.env.VITE_API_KEY;
+
 const Contact = () => {
   const [contactData, setContactData] = useState();
   const [contactName, setContactName] = useState("");
@@ -55,7 +57,7 @@ const Contact = () => {
   const getContactData = (id, afterRequest) => {
     setIsLoading(true);
     axios
-      .get("http://localhost:6600/contacts")
+      .get(`${apiBaseUrl}/contacts`)
       .then((response) => {
         setContactData(response?.data?.data);
         if (id && afterRequest) {
@@ -120,7 +122,7 @@ const Contact = () => {
 
   const handleDelete = async (id) => {
     try {
-      const result = await axios.delete(`http://localhost:6600/contacts/${id}`);
+      const result = await axios.delete(`${apiBaseUrl}/contacts/${id}`);
 
       // console.log("Form delete successfully:", result.data);
       getContactData();
@@ -197,22 +199,14 @@ const Contact = () => {
         let result;
         if (id) {
           // Update existing contact
-          result = await axios.put(
-            `http://localhost:6600/contacts/${id}`,
-            formData,
-            {
-              headers: { "Content-Type": "multipart/form-data" },
-            }
-          );
+          result = await axios.put(`${apiBaseUrl}/contacts/${id}`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
         } else {
           // Create new contact
-          result = await axios.post(
-            "http://localhost:6600/contacts",
-            formData,
-            {
-              headers: { "Content-Type": "multipart/form-data" },
-            }
-          );
+          result = await axios.post(`${apiBaseUrl}/contacts`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
         }
 
         // Reset the dialog and form fields after successful submission

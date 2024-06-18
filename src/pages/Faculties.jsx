@@ -9,6 +9,8 @@ import DeleteDialog from "../components/DeleteDialog";
 import Notify from "../components/Notify";
 import Loading from "../components/Loading";
 
+const apiBaseUrl = import.meta.env.VITE_API_KEY;
+
 const Faculties = () => {
   const [facultiesData, setFacultiesData] = useState([]);
   const [facultyName, setFacultyName] = useState("");
@@ -36,7 +38,7 @@ const Faculties = () => {
   const fetchFacultiesData = () => {
     setIsLoading(true);
     axios
-      .get("http://localhost:6600/faculties")
+      .get(`${apiBaseUrl}/faculties`)
       .then((response) => {
         setFacultiesData(response.data);
         setSelectedFaculty(response.data[0] || null);
@@ -89,12 +91,12 @@ const Faculties = () => {
       let result;
       if (selectedFaculty?._id) {
         result = await axios.put(
-          `http://localhost:6600/faculties/${selectedFaculty._id}`,
+          `${apiBaseUrl}/faculties/${selectedFaculty._id}`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
       } else {
-        result = await axios.post("http://localhost:6600/faculties", formData, {
+        result = await axios.post(`${apiBaseUrl}/faculties`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
@@ -112,7 +114,7 @@ const Faculties = () => {
   const handleDelete = async (id) => {
     try {
       const result = await axios.delete(
-        `http://localhost:6600/faculties/${id}`
+        `${apiBaseUrl}/faculties/${id}`
       );
       setNotification({ message: result.data.message, type: "success" });
       fetchFacultiesData();

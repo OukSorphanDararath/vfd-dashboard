@@ -9,6 +9,8 @@ import DeleteDialog from "../components/DeleteDialog";
 import Notify from "../components/Notify";
 import Loading from "../components/Loading";
 
+const apiBaseUrl = import.meta.env.VITE_API_KEY;
+
 const Schedule = () => {
   const [schedulesData, setSchedulesData] = useState();
   const [shiftName, setShiftName] = useState("");
@@ -22,7 +24,7 @@ const Schedule = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [notification, setNotification] = useState({ message: "", type: "" });
   const [clearFile, setClearFile] = useState();
-  const [isSummitting, setIsSubmitting] = useState(false);  
+  const [isSummitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -41,7 +43,7 @@ const Schedule = () => {
   const getScheduleData = (id, afterRequest) => {
     setIsLoading(true);
     axios
-      .get("http://localhost:6600/schedules")
+      .get(`${apiBaseUrl}/schedules`)
       .then((response) => {
         setSchedulesData(response?.data?.data);
         if (id && afterRequest) {
@@ -85,9 +87,7 @@ const Schedule = () => {
 
   const handleDelete = async (id) => {
     try {
-      const result = await axios.delete(
-        `http://localhost:6600/schedules/${id}`
-      );
+      const result = await axios.delete(`${apiBaseUrl}/schedules/${id}`);
 
       // console.log("Form delete successfully:", result.data);
       getScheduleData();
@@ -132,17 +132,13 @@ const Schedule = () => {
 
       try {
         if (id) {
-          result = await axios.put(
-            `http://localhost:6600/schedules/${id}`,
-            formData,
-            { headers: { "Content-Type": "multipart/form-data" } }
-          );
+          result = await axios.put(`${apiBaseUrl}/schedules/${id}`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
         } else {
-          result = await axios.post(
-            "http://localhost:6600/schedules",
-            formData,
-            { headers: { "Content-Type": "multipart/form-data" } }
-          );
+          result = await axios.post(`${apiBaseUrl}/schedules`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
         }
 
         setOpenDialog(false);
