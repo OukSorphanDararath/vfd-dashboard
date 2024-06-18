@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
-import firebase from "firebase/app";
-import "firebase/firestore";
+import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDoc,
+  onSnapshot,
+  updateDoc,
+  setDoc,
+  addDoc,
+} from "firebase/firestore";
+// import { getAuth } from 'firebase/auth'; // If you need auth
+// import './style.css';
 
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAdl8RxTB2X4E4PdR6lUNw0YCOVBPFgo8w",
   authDomain: "rtcpuc.firebaseapp.com",
@@ -13,154 +25,141 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const firestore = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const firestore = getFirestore(app);
 
 const AdminCall = () => {
+  const [localStream, setLocalStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const [callId, setCallId] = useState("");
-  const [isConnected, setIsConnected] = useState(false);
-  const [isHangupDisabled, setIsHangupDisabled] = useState(true);
+  const [isCallActive, setIsCallActive] = useState(false);
+  const pc = useRef(
+    new RTCPeerConnection({
+      iceServers: [
+        {
+          urls: [
+            "stun:stun1.l.google.com:19302",
+            "stun:stun2.l.google.com:19302",
+          ],
+        },
+      ],
+      iceCandidatePoolSize: 10,
+    })
+  );
 
-  // Ref for accessing video element
+  const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
 
-  // RTCPeerConnection configuration
-  const servers = {
-    iceServers: [
-      {
-        urls: [
-          "stun:stun1.l.google.com:19302",
-          "stun:stun2.l.google.com:19302",
-        ],
-      },
-    ],
-    iceCandidatePoolSize: 10,
+  useEffect(() => {
+    if (localStream) {
+      localVideoRef.current.srcObject = localStream;
+    }
+    if (remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [localStream, remoteStream]);
+
+  const startWebcam = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    });
+    setLocalStream(stream);
+
+    stream.getTracks().forEach((track) => {
+      pc.current.addTrack(track, stream);
+    });
+
+    pc.current.ontrack = (event) => {
+      const remoteStream = event.streams[0];
+      setRemoteStream(remoteStream);
+    };
   };
 
-  let pc = null;
+  const answerCall = async () => {
+    const callDocRef = doc(firestore, "shared", "callId");
+    const callSnapshot = await getDoc(callDocRef);
+    if (!callSnapshot.exists()) {
+      console.log("No such document!");
+      return;
+    }
 
-  useEffect(() => {
-    const fetchCallId = async () => {
-      try {
-        const sharedCallIdDoc = await firestore
-          .collection("shared")
-          .doc("callId")
-          .get();
-        if (sharedCallIdDoc.exists) {
-          setCallId(sharedCallIdDoc.data().id);
-        } else {
-          console.log("No call ID found");
-        }
-      } catch (error) {
-        console.error("Error fetching call ID:", error);
+    const callData = callSnapshot.data();
+    setCallId(callData.id);
+    const callDoc = doc(firestore, "calls", callData.id);
+    const answerCandidates = collection(callDoc, "answerCandidates");
+    const offerCandidates = collection(callDoc, "offerCandidates");
+
+    pc.current.onicecandidate = (event) => {
+      if (event.candidate) {
+        addDoc(answerCandidates, event.candidate.toJSON());
       }
     };
 
-    fetchCallId();
+    const callDetails = await getDoc(callDoc);
+    const offerDescription = callDetails.data().offer;
+    await pc.current.setRemoteDescription(
+      new RTCSessionDescription(offerDescription)
+    );
 
-    // Clean up listeners if needed
-    return () => {
-      // Unsubscribe listeners or any other clean-up logic
-    };
-  }, []);
+    const answerDescription = await pc.current.createAnswer();
+    await pc.current.setLocalDescription(answerDescription);
 
-  const answerCall = async () => {
-    try {
-      // Reference the call document in Firestore
-      const callDocRef = firestore.collection("calls").doc(callId);
-      const answerCandidates = callDocRef.collection("answerCandidates");
-      const offerCandidates = callDocRef.collection("offerCandidates");
+    await updateDoc(callDoc, {
+      answer: { type: answerDescription.type, sdp: answerDescription.sdp },
+    });
 
-      // Initialize RTCPeerConnection
-      pc = new RTCPeerConnection(servers);
-
-      // Listen for remote tracks
-      pc.ontrack = (event) => {
-        if (event.streams && event.streams[0]) {
-          setRemoteStream(event.streams[0]);
-          if (remoteVideoRef.current) {
-            remoteVideoRef.current.srcObject = event.streams[0];
-          }
-        }
-      };
-
-      // Listen for ICE candidates
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          answerCandidates.add(event.candidate.toJSON());
-        }
-      };
-
-      // Listen for offer
-      callDocRef.onSnapshot(async (snapshot) => {
-        const data = snapshot.data();
-        if (!pc.currentRemoteDescription && data?.offer) {
-          const offer = new RTCSessionDescription(data.offer);
-          await pc.setRemoteDescription(offer);
-
-          // Create answer
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-
-          await callDocRef.update({ answer: answer.toJSON() });
+    onSnapshot(offerCandidates, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const candidate = new RTCIceCandidate(change.doc.data());
+          pc.current.addIceCandidate(candidate);
         }
       });
+    });
 
-      // Listen for ICE candidates sent by caller
-      offerCandidates.onSnapshot((snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          if (change.type === "added") {
-            const candidate = new RTCIceCandidate(change.doc.data());
-            pc.addIceCandidate(candidate);
-          }
-        });
-      });
-
-      setIsConnected(true);
-      setIsHangupDisabled(false);
-    } catch (error) {
-      console.error("Error answering the call:", error);
-    }
+    setIsCallActive(true);
   };
 
   const hangupCall = async () => {
-    // Close RTCPeerConnection
-    if (pc) {
-      pc.close();
+    if (callId) {
+      const callDoc = doc(firestore, "calls", callId);
+      await updateDoc(callDoc, { answer: null });
+      setCallId("");
+      setIsCallActive(false);
+      setRemoteStream(null);
+      if (localStream) {
+        localStream.getTracks().forEach((track) => track.stop());
+        setLocalStream(null);
+      }
     }
-
-    // Remove call ID from shared document
-    await firestore.collection("shared").doc("callId").delete();
-
-    setRemoteStream(null);
-    setCallId("");
-    setIsConnected(false);
-    setIsHangupDisabled(true);
   };
 
   return (
-    <div>
-      <h1>Admin Call</h1>
+    <div className="admin-call">
+      <video
+        ref={localVideoRef}
+        autoPlay
+        playsInline
+        muted
+        className="local-video"
+      />
+      <video
+        ref={remoteVideoRef}
+        autoPlay
+        playsInline
+        className="remote-video"
+      />
       <div>
-        {remoteStream && (
-          <video id="remoteVideo" autoPlay ref={remoteVideoRef}></video>
+        {!isCallActive ? (
+          <button onClick={startWebcam}>Start Webcam</button>
+        ) : (
+          <button onClick={hangupCall}>Hang Up</button>
         )}
-      </div>
-      {!isConnected && (
-        <button onClick={answerCall} disabled={!callId}>
+        <button onClick={answerCall} disabled={isCallActive}>
           Answer Call
         </button>
-      )}
-      {isConnected && (
-        <button onClick={hangupCall} disabled={isHangupDisabled}>
-          Hang Up
-        </button>
-      )}
-      <p>Call ID: {callId}</p>
-      {isConnected && <p>Connected!</p>}
+      </div>
     </div>
   );
 };
