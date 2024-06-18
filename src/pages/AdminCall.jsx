@@ -7,6 +7,8 @@ const AdminCall = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isHangupDisabled, setIsHangupDisabled] = useState(true);
 
+  console.log(callId, "CALL ID");
+
   // Ref for accessing video element
   const remoteVideoRef = useRef(null);
 
