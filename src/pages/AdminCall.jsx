@@ -1,13 +1,28 @@
 import React, { useState, useEffect, useRef } from "react";
-import { firestore } from "../firebase"; // Adjust the path as needed
+import firebase from "firebase/app";
+import "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAdl8RxTB2X4E4PdR6lUNw0YCOVBPFgo8w",
+  authDomain: "rtcpuc.firebaseapp.com",
+  projectId: "rtcpuc",
+  storageBucket: "rtcpuc.appspot.com",
+  messagingSenderId: "874247322664",
+  appId: "1:874247322664:web:50eefe2040da46636f891d",
+  measurementId: "G-R0KP2TRQTE",
+};
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const firestore = firebase.firestore();
 
 const AdminCall = () => {
   const [remoteStream, setRemoteStream] = useState(null);
   const [callId, setCallId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [isHangupDisabled, setIsHangupDisabled] = useState(true);
-
-  console.log(callId, "CALL ID");
 
   // Ref for accessing video element
   const remoteVideoRef = useRef(null);
