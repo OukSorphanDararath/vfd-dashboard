@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import FileUpload from "../components/FileUpload";
 import axios from "axios";
 import Button from "../components/Button";
 import Dialog from "../components/Dialog";
@@ -8,23 +7,26 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import DeleteDialog from "../components/DeleteDialog";
 import Notify from "../components/Notify";
 import Loading from "../components/Loading";
+import { storage } from "../firebase";
+import FileUpload from "../components/FileUpload";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const apiBaseUrl = import.meta.env.VITE_API_KEY;
 
 const Contact = () => {
-  const [contactData, setContactData] = useState();
+  const [contactData, setContactData] = useState([]);
   const [contactName, setContactName] = useState("");
   const [contactNameError, setContactNameError] = useState("");
   const [newContactName, setNewContactName] = useState("");
   const [newContactNameError, setNewContactNameError] = useState("");
   const [file, setFile] = useState(null);
   const [newFile, setNewFile] = useState(null);
-  const [selectedData, setSelectedData] = useState();
+  const [clearFile, setClearFile] = useState();
+  const [selectedData, setSelectedData] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [notification, setNotification] = useState({ message: "", type: "" });
-  const [clearFile, setClearFile] = useState();
-  const [isSummitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const [phoneNum, setPhoneNum] = useState("");
@@ -43,12 +45,9 @@ const Contact = () => {
 
   useEffect(() => {
     if (selectedData) {
-      setContactName(selectedData?.name);
-      setContactNameError("");
-      setPhoneNum(selectedData?.phone);
-      setPhoneNumError("");
-      setTelegram(selectedData?.telegram);
-      setTelegramError("");
+      setContactName(selectedData?.name || "");
+      setPhoneNum(selectedData?.phone || "");
+      setTelegram(selectedData?.telegram || "");
       setClearFile(new Date());
       setFile(null);
     }
@@ -59,7 +58,7 @@ const Contact = () => {
     axios
       .get(`${apiBaseUrl}/contacts`)
       .then((response) => {
-        setContactData(response?.data?.data);
+        setContactData(response?.data?.data || []);
         if (id && afterRequest) {
           setSelectedData(response?.data?.data?.find((x) => x._id === id));
         } else if (!id && afterRequest) {
@@ -69,18 +68,16 @@ const Contact = () => {
         } else {
           setSelectedData(response?.data?.data[0]);
         }
-
+        // setSelectedData(response?.data?.data[0] || null);
         setIsLoading(false);
       })
       .catch(() => {
-        setNotification({ message: "Error fetching schedules", type: "error" });
+        setNotification({ message: "Error fetching contacts", type: "error" });
         setIsLoading(false);
       });
   };
 
   const handleFileChange = (uploadedFile) => {
-    if (uploadedFile === null)
-      setSelectedData((prev) => ({ ...prev, pdf: null }));
     if (openDialog) {
       setNewFile(uploadedFile);
     } else {
@@ -93,10 +90,9 @@ const Contact = () => {
       setNewPhoneNum(event.target.value);
     } else {
       setPhoneNum(event.target.value);
-      setSelectedData((prev) => ({ ...prev, phone: event.target.value }));
     }
-    if (phoneNumError) setPhoneNumError(""); // Clear error when user starts typing
-    if (newPhoneNumError) setNewPhoneNumError(""); // Clear error when user starts typing
+    if (phoneNumError) setPhoneNumError("");
+    if (newPhoneNumError) setNewPhoneNumError("");
   };
 
   const handleTelegramChange = (event, isNew) => {
@@ -104,27 +100,24 @@ const Contact = () => {
       setNewTelegram(event.target.value);
     } else {
       setTelegram(event.target.value);
-      setSelectedData((prev) => ({ ...prev, telegram: event.target.value }));
     }
-    if (telegramError) setTelegramError(""); // Clear error when user starts typing
-    if (newTelegramError) setNewTelegramError(""); // Clear error when user starts typing
+    if (telegramError) setTelegramError("");
+    if (newTelegramError) setNewTelegramError("");
   };
+
   const handleContactNameChange = (event, isNew) => {
     if (isNew) {
       setNewContactName(event.target.value);
     } else {
       setContactName(event.target.value);
-      setSelectedData((prev) => ({ ...prev, name: event.target.value }));
     }
-    if (contactNameError) setContactNameError(""); // Clear error when user starts typing
-    if (newContactNameError) setNewContactNameError(""); // Clear error when user starts typing
+    if (contactNameError) setContactNameError("");
+    if (newContactNameError) setNewContactNameError("");
   };
 
   const handleDelete = async (id) => {
     try {
       const result = await axios.delete(`${apiBaseUrl}/contacts/${id}`);
-
-      // console.log("Form delete successfully:", result.data);
       getContactData();
       setShowDeleteDialog(false);
       setSelectedData(contactData.length > 0 ? contactData[0] : null);
@@ -133,11 +126,28 @@ const Contact = () => {
         type: "success",
       });
     } catch (error) {
-      setNotification({ message: "Error deleting schedule.", type: "error" });
+      setNotification({ message: "Error deleting contact.", type: "error" });
     }
   };
 
-  // Handle form submission
+  const uploadFileToFirebase = async (file, path) => {
+    if (!file) return null;
+
+    try {
+      const storageRef = ref(storage, `${path}/${file.name}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+      console.log("File uploaded to Firebase:", {
+        path: downloadURL,
+        name: file.name,
+      });
+      return downloadURL;
+    } catch (error) {
+      console.error("Error uploading file to Firebase:", error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (event, id) => {
     event.preventDefault();
     setIsSubmitting(true);
@@ -181,35 +191,34 @@ const Contact = () => {
     }
 
     if (isValid) {
-      // Prepare form data
-      const formData = new FormData();
-      if (id) {
-        formData.append("name", contactName);
-        formData.append("phone", phoneNum);
-        formData.append("telegram", telegram);
-        formData.append("file", file ?? selectedData?.pdf);
-      } else {
-        formData.append("name", newContactName);
-        formData.append("phone", newPhoneNum);
-        formData.append("telegram", newTelegram);
-        formData.append("file", newFile);
-      }
-
       try {
+        let filePath = selectedData?.file || null;
+
+        // Upload new file to Firebase if it's a new file
+        if (openDialog && newFile) {
+          filePath = await uploadFileToFirebase(newFile, "contacts");
+        } else if (!openDialog && file) {
+          filePath = await uploadFileToFirebase(file, "contacts");
+        }
+
+        // Construct the contact data to send to the server
+        const contactData = {
+          name: openDialog ? newContactName : contactName,
+          phone: openDialog ? newPhoneNum : phoneNum,
+          telegram: openDialog ? newTelegram : telegram,
+          img: filePath, // URL or path of the uploaded image
+        };
+
         let result;
         if (id) {
           // Update existing contact
-          result = await axios.put(`${apiBaseUrl}/contacts/${id}`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
+          result = await axios.put(`${apiBaseUrl}/contacts/${id}`, contactData);
         } else {
           // Create new contact
-          result = await axios.post(`${apiBaseUrl}/contacts`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
+          result = await axios.post(`${apiBaseUrl}/contacts`, contactData);
         }
 
-        // Reset the dialog and form fields after successful submission
+        // Handle successful submission
         setOpenDialog(false);
         setNewContactName("");
         setNewPhoneNum("");
@@ -220,7 +229,6 @@ const Contact = () => {
           type: "success",
         });
 
-        // Refresh the contact data
         getContactData(id, true);
       } catch (error) {
         setNotification({ message: "Error saving contact.", type: "error" });
@@ -318,11 +326,12 @@ const Contact = () => {
 
                   <div className="my-4 h-full">
                     <FileUpload
-                      filename={selectedData?.image}
+                      filename={selectedData?.img}
                       fileType="image"
                       onFileChange={handleFileChange}
                       allowMultiple={false}
                       onClearFile={clearFile}
+                      filePreview={selectedData?.img}
                     />
                   </div>
 
@@ -331,7 +340,7 @@ const Contact = () => {
                       text={"Update"}
                       type="submit"
                       className={"w-52 border-2 border-white/20"}
-                      isLoading={!openDialog && isSummitting}
+                      isLoading={!openDialog && isSubmitting}
                     />
                   </div>
                 </form>
@@ -403,7 +412,7 @@ const Contact = () => {
           onFormSubmit={(e) => {
             handleSubmit(e);
           }}
-          isSubmitting={isSummitting}
+          isSubmitting={isSubmitting}
         />
       )}
 

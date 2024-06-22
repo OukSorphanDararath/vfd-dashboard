@@ -6,6 +6,7 @@ import { BsFiletypePdf } from "react-icons/bs";
 
 const FileUpload = ({
   filename,
+  filePreview,
   fileType,
   onFileChange,
   allowMultiple = false,
@@ -113,8 +114,8 @@ const FileUpload = ({
           <div className=" overflow-hidden">
             {fileType === "image" ? (
               <img
-                src={file.preview}
-                alt={file.name}
+                src={file?.preview ?? filePreview}
+                alt={file?.name ?? filename}
                 className="w-full overflow-hidden max-h-36 object-contain"
                 onDoubleClick={openModal}
               />
@@ -136,18 +137,18 @@ const FileUpload = ({
         </div>
       )}
 
-      {isModalOpen && file && (
+      {isModalOpen && (file || filePreview) && (
         <Modal onClose={closeModal}>
           {fileType === "pdf" ? (
             <iframe
-              src={file.preview}
+              src={file?.preview ?? filePreview}
               className="w-full h-full"
-              title={file.name}
+              title={filePreview ?? file?.name ?? ""}
             />
           ) : (
             <img
-              src={file.preview}
-              alt={file.name}
+              src={file?.preview ?? filePreview}
+              alt={file?.name ?? filename}
               className="w-full h-auto object-cover"
             />
           )}

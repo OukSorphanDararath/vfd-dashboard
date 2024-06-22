@@ -144,7 +144,7 @@ const Schedule = () => {
           fileData = await uploadFileToFirebase(file, "schedules");
         }
 
-        console.log("File data to be sent in payload:", fileData); // Debugging log
+        // console.log("File data to be sent in payload:", fileData); // Debugging log
 
         const data = {
           name: openDialog ? newShiftName : shiftName,
@@ -241,6 +241,7 @@ const Schedule = () => {
                       onFileChange={handleFileChange}
                       allowMultiple={false}
                       onClearFile={clearFile}
+                      filePreview={selectedData?.pdfPath}
                     />
                   </div>
 
