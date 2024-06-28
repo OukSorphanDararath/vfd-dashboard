@@ -23,14 +23,7 @@ const Header = () => {
 
   const handlePickup = async () => {
     history.push("/admin"); // Redirect to /admin
-    try {
-      const docRef = doc(firestore, "shared", "callId");
-      await deleteDoc(docRef); // Remove the call ID from Firestore
-      setCallId("");
-      setShowPopup(false); // Close the popup after picking up
-    } catch (error) {
-      console.error("Error removing document: ", error);
-    }
+    setShowPopup(false); // Close the popup after picking up
   };
 
   useEffect(() => {
@@ -44,7 +37,11 @@ const Header = () => {
           const data = docSnap.data();
           if (data.id) {
             setCallId(data.id);
-            setShowPopup(true); // Show popup if id exists
+            if (location.pathname === "/admin") {
+              setShowPopup(false); // Close the popup if navigating to /admin
+            } else {
+              setShowPopup(true); // Show popup if id exists
+            }
           } else {
             setCallId("");
             setShowPopup(false); // Hide popup if id doesn't exist
@@ -65,13 +62,6 @@ const Header = () => {
 
     // Cleanup interval on component unmount
     return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    // Check if on /admin route, hide popup and stop fetching
-    if (location.pathname === "/admin") {
-      setShowPopup(false); // Close the popup if navigating to /admin
-    }
   }, [location.pathname]);
 
   return (
