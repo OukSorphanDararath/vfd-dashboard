@@ -49,7 +49,7 @@ const Contact = () => {
       setPhoneNum(selectedData?.phone || "");
       setTelegram(selectedData?.telegram || "");
       setClearFile(new Date());
-      setFile(null);
+      setFile(null); // Clear file state when switching between contacts
     }
   }, [selectedData]);
 
@@ -58,17 +58,15 @@ const Contact = () => {
     axios
       .get(`${apiBaseUrl}/contacts`)
       .then((response) => {
-        setContactData(response?.data?.data || []);
+        const data = response?.data?.data || [];
+        setContactData(data);
         if (id && afterRequest) {
-          setSelectedData(response?.data?.data?.find((x) => x._id === id));
+          setSelectedData(data.find((x) => x._id === id));
         } else if (!id && afterRequest) {
-          setSelectedData(
-            response?.data?.data[response?.data?.data.length - 1]
-          );
+          setSelectedData(data[data.length - 1]);
         } else {
-          setSelectedData(response?.data?.data[0]);
+          setSelectedData(data[0]);
         }
-        // setSelectedData(response?.data?.data[0] || null);
         setIsLoading(false);
       })
       .catch(() => {
@@ -192,7 +190,7 @@ const Contact = () => {
 
     if (isValid) {
       try {
-        let filePath = selectedData?.file || null;
+        let filePath = selectedData?.img || null;
 
         // Upload new file to Firebase if it's a new file
         if (openDialog && newFile) {
@@ -220,10 +218,7 @@ const Contact = () => {
 
         // Handle successful submission
         setOpenDialog(false);
-        setNewContactName("");
-        setNewPhoneNum("");
-        setNewTelegram("");
-        setNewFile(null);
+        resetNewContactForm(); // Reset the form after submission
         setNotification({
           message: result?.data?.message || "Successfully added a new contact",
           type: "success",
@@ -235,6 +230,13 @@ const Contact = () => {
       }
     }
     setIsSubmitting(false);
+  };
+
+  const resetNewContactForm = () => {
+    setNewContactName("");
+    setNewPhoneNum("");
+    setNewTelegram("");
+    setNewFile(null);
   };
 
   return (
@@ -314,7 +316,7 @@ const Contact = () => {
                       isRequired={true}
                     />
                     <Input
-                      id="contactName"
+                      id="telegram"
                       value={telegram}
                       onChange={handleTelegramChange}
                       error={telegramError}
@@ -346,7 +348,7 @@ const Contact = () => {
                 </form>
               ) : (
                 <div className="flex justify-center w-full h-full items-center">
-                  No schedule data. Please add a new data.
+                  No contact data. Please add a new contact.
                 </div>
               )}
             </>
@@ -400,13 +402,7 @@ const Contact = () => {
             </form>
           }
           onClose={() => {
-            setNewContactName("");
-            setNewContactNameError("");
-            setNewPhoneNum("");
-            setNewPhoneNumError("");
-            setNewTelegram("");
-            setNewTelegramError("");
-            setNewFile(null);
+            resetNewContactForm(); // Reset form on close
             setOpenDialog(false);
           }}
           onFormSubmit={(e) => {
