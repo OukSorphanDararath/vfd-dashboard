@@ -10,6 +10,8 @@ import Notify from "../components/Notify";
 import Loading from "../components/Loading";
 import { storage } from "../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { read, utils, writeFile } from "xlsx";
+import { TbFileDownload } from "react-icons/tb";
 
 const apiBaseUrl = import.meta.env.VITE_API_KEY;
 
@@ -28,6 +30,7 @@ const Schedule = () => {
   const [clearFile, setClearFile] = useState();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [listOfSchedule, setListOfSchedule] = useState([]);
 
   useEffect(() => {
     getScheduleData();
@@ -63,9 +66,60 @@ const Schedule = () => {
   };
 
   const handleFileChange = (uploadedFile) => {
-    if (uploadedFile === null) {
+    if (!uploadedFile) {
       setSelectedData((prev) => ({ ...prev, pdfPath: null, pdfName: null }));
+      return;
     }
+
+    // Check if the file type is Excel
+    const isExcelFile =
+      uploadedFile.type.includes("spreadsheetml") ||
+      uploadedFile.type.includes("excel");
+    if (!isExcelFile) {
+      setNotification({
+        message: "Please upload a valid Excel file.",
+        type: "error",
+      });
+      return;
+    }
+
+    // Create a FileReader to read the file
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      const binaryStr = event.target.result;
+
+      try {
+        // Read the binary data as an Excel workbook
+        const workbook = read(binaryStr, { type: "binary" });
+        const sheetName = workbook.SheetNames[0]; // Get the first sheet name
+        const sheet = workbook.Sheets[sheetName]; // Get the sheet data
+        const data = utils.sheet_to_json(sheet); // Convert sheet to JSON
+
+        // Log the data array to the console for debugging
+        setListOfSchedule(data);
+      } catch (error) {
+        console.error("Error processing Excel file:", error);
+        setNotification({
+          message: "Error processing Excel file.",
+          type: "error",
+        });
+      }
+    };
+
+    reader.onerror = () => {
+      console.error("File reading failed");
+      setNotification({ message: "File reading failed", type: "error" });
+    };
+
+    reader.onabort = () => {
+      console.warn("File reading was aborted");
+      setNotification({ message: "File reading was aborted", type: "warning" });
+    };
+
+    // Read the file as binary string
+    reader.readAsBinaryString(uploadedFile);
+
     if (openDialog) {
       setNewFile(uploadedFile);
     } else {
@@ -118,6 +172,38 @@ const Schedule = () => {
     }
   };
 
+  const handleDownloadTemplate = () => {
+    // Define the template data
+    const templateData = [
+      {
+        Subject: "Math",
+        Day: "Monday",
+        Time: "10:00 AM - 11:00 AM",
+        Room: "101",
+        Campus: "Main",
+        Instructor: "John Doe",
+      },
+      {
+        Subject: "Science",
+        Day: "Tuesday",
+        Time: "11:00 AM - 12:00 PM",
+        Room: "202",
+        Campus: "West",
+        Instructor: "Jane Smith",
+      },
+    ];
+
+    // Create a worksheet from the template data
+    const worksheet = utils.json_to_sheet(templateData);
+
+    // Create a new workbook and append the worksheet
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, "Class Schedule");
+
+    // Generate a binary string and trigger a download
+    writeFile(workbook, "Class_Schedule_Template.xlsx");
+  };
+
   const handleSubmit = async (event, id) => {
     event.preventDefault();
     setIsSubmitting(true);
@@ -150,6 +236,7 @@ const Schedule = () => {
           name: openDialog ? newShiftName : shiftName,
           pdfPath: fileData?.path,
           pdfName: fileData?.name,
+          schedules: listOfSchedule,
         };
 
         let result;
@@ -234,10 +321,17 @@ const Schedule = () => {
                     isRequired={true}
                   />
 
-                  <div className="mb-4 h-full">
+                  <div className="mb-4 h-full flex flex-col gap-4">
+                    <a
+                      className="underline cursor-pointer text-sm flex items-center gap-1"
+                      onClick={handleDownloadTemplate}
+                    >
+                      <TbFileDownload />
+                      Download Schedule Template
+                    </a>
                     <FileUpload
                       filename={selectedData?.pdfName}
-                      fileType="pdf"
+                      fileType="excel"
                       onFileChange={handleFileChange}
                       allowMultiple={false}
                       onClearFile={clearFile}
@@ -279,9 +373,16 @@ const Schedule = () => {
                 isRequired={true}
               />
 
-              <div className="mb-4 h-full">
+              <div className="mb-4 h-full flex flex-col gap-4">
+                <a
+                  className="underline cursor-pointer text-sm flex items-center gap-2"
+                  onClick={handleDownloadTemplate}
+                >
+                  <TbFileDownload />
+                  Download Schedule Template
+                </a>
                 <FileUpload
-                  fileType="pdf"
+                  fileType="excel"
                   onFileChange={handleFileChange}
                   allowMultiple={false}
                 />

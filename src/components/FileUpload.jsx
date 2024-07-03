@@ -3,6 +3,7 @@ import { useDropzone } from "react-dropzone";
 import { IoIosRemove } from "react-icons/io";
 import Modal from "./Modal.jsx";
 import { BsFiletypePdf } from "react-icons/bs";
+import { SiMicrosoftexcel } from "react-icons/si";
 
 const FileUpload = ({
   filename,
@@ -26,7 +27,11 @@ const FileUpload = ({
       if (rejectedFiles.length > 0) {
         setError(
           `Only ${
-            fileType === "image" ? "image files" : "PDF files"
+            fileType === "image"
+              ? "image files"
+              : fileType === "pdf"
+              ? "PDF files"
+              : "Excel files"
           } are allowed.`
         );
         return;
@@ -41,6 +46,18 @@ const FileUpload = ({
 
         if (fileType === "image" && !newFile.type.startsWith("image/")) {
           setError("Only image files are allowed.");
+          return;
+        }
+
+        if (
+          fileType === "excel" &&
+          !(
+            newFile.type ===
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+            newFile.type === "application/vnd.ms-excel"
+          )
+        ) {
+          setError("Only Excel files are allowed.");
           return;
         }
 
@@ -72,7 +89,12 @@ const FileUpload = ({
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    accept: fileType === "image" ? "image/*" : "application/pdf",
+    accept:
+      fileType === "image"
+        ? "image/*"
+        : fileType === "pdf"
+        ? "application/pdf"
+        : ".xlsx, .xls",
     multiple: allowMultiple,
   });
 
@@ -99,12 +121,22 @@ const FileUpload = ({
         >
           <input {...getInputProps()} />
           <p>
-            Drag & drop a {fileType === "image" ? "image" : "PDF"} file here, or
-            click to select one
+            Drag & drop a{" "}
+            {fileType === "image"
+              ? "image"
+              : fileType === "pdf"
+              ? "PDF"
+              : "Excel"}{" "}
+            file here, or click to select one
           </p>
           <em>
-            (Only {fileType === "image" ? "image files" : "PDF files"} will be
-            accepted)
+            (Only{" "}
+            {fileType === "image"
+              ? "image files"
+              : fileType === "pdf"
+              ? "PDF files"
+              : "Excel files"}{" "}
+            will be accepted)
           </em>
           {error && <p className="text-red-500 mt-2">{error}</p>}
         </div>
@@ -119,12 +151,19 @@ const FileUpload = ({
                 className="w-full overflow-hidden max-h-36 object-contain"
                 onDoubleClick={openModal}
               />
-            ) : (
+            ) : fileType === "pdf" ? (
               <div
                 className="text-sm p-4 flex items-center gap-2"
                 onDoubleClick={openModal}
               >
                 <BsFiletypePdf size={20} /> {filename ?? file.name}
+              </div>
+            ) : (
+              <div
+                className="text-sm p-4 flex items-center gap-2"
+                onDoubleClick={openModal}
+              >
+                <SiMicrosoftexcel size={20} /> {filename ?? file.name}
               </div>
             )}
           </div>
@@ -145,12 +184,17 @@ const FileUpload = ({
               className="w-full h-full"
               title={filePreview ?? file?.name ?? ""}
             />
-          ) : (
+          ) : fileType === "image" ? (
             <img
               src={file?.preview ?? filePreview}
               alt={file?.name ?? filename}
               className="w-full h-auto object-cover"
             />
+          ) : (
+            <div className="text-center p-4">
+              <SiMicrosoftexcel size={50} />
+              <p>{filename ?? file.name}</p>
+            </div>
           )}
         </Modal>
       )}
