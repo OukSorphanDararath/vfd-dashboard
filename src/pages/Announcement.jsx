@@ -19,7 +19,7 @@ const Announcement = () => {
   const [titleError, setTitleError] = useState("");
   const [content, setContent] = useState("");
   const [file, setFile] = useState(null);
-  const [clearFile, setClearFile] = useState();
+  // const [clearFile, setClearFile] = useState();
   const [selectedData, setSelectedData] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -35,7 +35,7 @@ const Announcement = () => {
     if (selectedData) {
       setTitle(selectedData?.title || "");
       setContent(selectedData?.content || "");
-      setClearFile(new Date());
+      // setClearFile(new Date());
       setFile(null); // Clear file state when switching between contacts
     }
   }, [selectedData]);
@@ -70,6 +70,9 @@ const Announcement = () => {
       setFile(uploadedFile);
     } else {
       setFile(uploadedFile);
+      if (!uploadedFile) {
+        setSelectedData((prev) => ({ ...prev, image: null }));
+      }
     }
   };
 
@@ -143,7 +146,9 @@ const Announcement = () => {
         let filePath = selectedData?.image || null;
 
         // Upload new file to Firebase if it's a new file
-        if (openDialog && file) {
+        if (openDialog) {
+          filePath = await uploadFileToFirebase(file, "announcements");
+        } else {
           filePath = await uploadFileToFirebase(file, "announcements");
         }
 
@@ -151,7 +156,7 @@ const Announcement = () => {
         const announcementData = {
           title: openDialog ? title : selectedData.title,
           content: openDialog ? content : selectedData.content,
-          image: filePath, // URL or path of the uploaded image
+          image: filePath ?? selectedData?.image, // URL or path of the uploaded image
         };
 
         let result;
@@ -265,7 +270,6 @@ const Announcement = () => {
                       fileType="image"
                       onFileChange={handleFileChange}
                       allowMultiple={false}
-                      onClearFile={clearFile}
                       filePreview={selectedData?.image}
                     />
                   </div>

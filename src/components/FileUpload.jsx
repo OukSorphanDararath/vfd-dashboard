@@ -11,15 +11,14 @@ const FileUpload = ({
   fileType,
   onFileChange,
   allowMultiple = false,
-  onClearFile,
 }) => {
   const [file, setFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (onClearFile) setFile(null);
-  }, [onClearFile]);
+  // useEffect(() => {
+  //   if (onClearFile) setFile(null);
+  // }, [onClearFile]);
 
   const onDrop = useCallback(
     (acceptedFiles, rejectedFiles) => {
@@ -72,7 +71,8 @@ const FileUpload = ({
     [fileType, onFileChange]
   );
 
-  const removeFile = () => {
+  const removeFile = (event) => {
+    event.preventDefault(); // Prevent default form submission
     if (file) URL.revokeObjectURL(file?.preview);
     setFile(null);
     setError(""); // Clear error when file is removed

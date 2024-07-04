@@ -80,6 +80,9 @@ const Contact = () => {
       setNewFile(uploadedFile);
     } else {
       setFile(uploadedFile);
+      if (!uploadedFile) {
+        setSelectedData((prev) => ({ ...prev, img: uploadedFile }));
+      }
     }
   };
 
@@ -193,9 +196,9 @@ const Contact = () => {
         let filePath = selectedData?.img || null;
 
         // Upload new file to Firebase if it's a new file
-        if (openDialog && newFile) {
+        if (openDialog) {
           filePath = await uploadFileToFirebase(newFile, "contacts");
-        } else if (!openDialog && file) {
+        } else {
           filePath = await uploadFileToFirebase(file, "contacts");
         }
 
@@ -204,7 +207,7 @@ const Contact = () => {
           name: openDialog ? newContactName : contactName,
           phone: openDialog ? newPhoneNum : phoneNum,
           telegram: openDialog ? newTelegram : telegram,
-          img: filePath, // URL or path of the uploaded image
+          img: filePath ?? selectedData?.img, // URL or path of the uploaded image
         };
 
         let result;
