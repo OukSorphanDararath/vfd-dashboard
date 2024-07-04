@@ -12,6 +12,7 @@ import WifiAccess from "./pages/WifiAccess";
 import Faculties from "./pages/Faculties";
 import Header from "./components/Header";
 import AdminCall from "./pages/AdminCall";
+import Announcement from "./pages/Announcement";
 
 function App() {
   return (
@@ -26,6 +27,9 @@ function App() {
                 Welcome to PUC Virtual Front Desk, Please select your section to
                 process.
               </>
+            </Route>
+            <Route path="/announcement">
+              <Announcement />
             </Route>
             <Route path="/schedules">
               <Schedule />
