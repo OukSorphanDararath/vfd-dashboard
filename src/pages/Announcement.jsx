@@ -167,6 +167,7 @@ const Announcement = () => {
         // Upload new file to Firebase if it's a new file
         if (openDialog) {
           filePath = await uploadFileToFirebase(newFile, "announcements");
+          console.log(file);
         } else {
           filePath = await uploadFileToFirebase(file, "announcements");
         }
@@ -185,7 +186,7 @@ const Announcement = () => {
             : selectedData.content,
           image: openDialog
             ? filePath
-            : !openDialog
+            : filePath
             ? filePath
             : selectedData?.image, // URL or path of the uploaded image
           link: openDialog ? newLink : !openDialog ? link : selectedData.link, // Include link if provided
