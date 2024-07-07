@@ -3,12 +3,12 @@ import { NavLink } from "react-router-dom";
 
 const SideBar = () => {
   const sideBarContent = [
-    { id: 0, title: "Class Room", url: "/classroom", icon: "" },
+    // { id: 0, title: "Class Room", url: "/classroom", icon: "" },
     { id: 7, title: "Announcement", url: "/announcement", icon: "" },
-    { id: 1, title: "Campus", url: "/campus", icon: "" },
-    { id: 2, title: "WIFI Access", url: "/wifi-access", icon: "" },
+    // { id: 1, title: "Campus", url: "/campus", icon: "" },
+    // { id: 2, title: "WIFI Access", url: "/wifi-access", icon: "" },
     { id: 3, title: "Schedules", url: "/schedules", icon: "" },
-    { id: 4, title: "Faculties", url: "/faculties", icon: "" },
+    // { id: 4, title: "Faculties", url: "/faculties", icon: "" },
     { id: 5, title: "Contacts", url: "/contact", icon: "" },
     { id: 6, title: "Admin Call", url: "/admin", icon: "" },
   ];

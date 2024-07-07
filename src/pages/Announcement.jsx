@@ -17,8 +17,12 @@ const Announcement = () => {
   const [announcementData, setAnnouncementData] = useState([]);
   const [title, setTitle] = useState("");
   const [titleError, setTitleError] = useState("");
+  const [newTitle, setNewTitle] = useState("");
+  const [newTitleError, setNewTitleError] = useState("");
   const [content, setContent] = useState("");
+  const [newContent, setNewContent] = useState("");
   const [file, setFile] = useState(null);
+  const [newFile, setNewFile] = useState(null);
   // const [clearFile, setClearFile] = useState();
   const [selectedData, setSelectedData] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -26,6 +30,8 @@ const Announcement = () => {
   const [notification, setNotification] = useState({ message: "", type: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [link, setLink] = useState("");
+  const [newLink, setNewLink] = useState("");
 
   useEffect(() => {
     getContactData();
@@ -35,6 +41,7 @@ const Announcement = () => {
     if (selectedData) {
       setTitle(selectedData?.title || "");
       setContent(selectedData?.content || "");
+      setLink(selectedData?.link || "");
       // setClearFile(new Date());
       setFile(null); // Clear file state when switching between contacts
     }
@@ -67,7 +74,7 @@ const Announcement = () => {
 
   const handleFileChange = (uploadedFile) => {
     if (openDialog) {
-      setFile(uploadedFile);
+      setNewFile(uploadedFile);
     } else {
       setFile(uploadedFile);
       if (!uploadedFile) {
@@ -78,15 +85,28 @@ const Announcement = () => {
 
   const handleTitleChange = (event, isNew) => {
     if (isNew) {
-      setTitle(event.target.value);
+      setNewTitle(event.target.value);
     } else {
       setTitle(event.target.value);
     }
     if (titleError) setTitleError("");
+    if (newTitleError) newTitleError("");
+  };
+
+  const handleLinkChange = (event) => {
+    if (openDialog) {
+      setNewLink(event.target.value);
+    } else {
+      setLink(event.target.value);
+    }
   };
 
   const handleContentChange = (event) => {
-    setContent(event.target.value);
+    if (openDialog) {
+      setNewContent(event.target.value);
+    } else {
+      setContent(event.target.value);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -132,42 +152,54 @@ const Announcement = () => {
 
     // Clear previous errors
     setTitleError("");
+    setNewTitleError("");
 
     // Validate fields
-    if (!openDialog) {
-      if (!title.trim()) {
-        setTitleError("Title is required.");
-        isValid = false;
-      }
+    if (!openDialog && !title.trim()) {
+      setTitleError("Title is required.");
+      isValid = false;
     }
 
     if (isValid) {
       try {
-        let filePath = selectedData?.image || null;
+        let filePath;
 
         // Upload new file to Firebase if it's a new file
         if (openDialog) {
-          filePath = await uploadFileToFirebase(file, "announcements");
+          filePath = await uploadFileToFirebase(newFile, "announcements");
         } else {
           filePath = await uploadFileToFirebase(file, "announcements");
         }
 
-        // Construct the contact data to send to the server
+        // Construct the announcement data to send to the server
         const announcementData = {
-          title: openDialog ? title : selectedData.title,
-          content: openDialog ? content : selectedData.content,
-          image: filePath ?? selectedData?.image, // URL or path of the uploaded image
+          title: openDialog
+            ? newTitle
+            : !openDialog
+            ? title
+            : selectedData.title,
+          content: openDialog
+            ? newContent
+            : !openDialog
+            ? content
+            : selectedData.content,
+          image: openDialog
+            ? filePath
+            : !openDialog
+            ? filePath
+            : selectedData?.image, // URL or path of the uploaded image
+          link: openDialog ? newLink : !openDialog ? link : selectedData.link, // Include link if provided
         };
 
         let result;
         if (id) {
-          // Update existing contact
+          // Update existing announcement
           result = await axios.put(
             `${apiBaseUrl}/announcements/${id}`,
             announcementData
           );
         } else {
-          // Create new contact
+          // Create new announcement
           result = await axios.post(
             `${apiBaseUrl}/announcements`,
             announcementData
@@ -177,17 +209,25 @@ const Announcement = () => {
         // Handle successful submission
         setOpenDialog(false);
         setTitle("");
+        setNewTitle("");
         setContent("");
+        setNewContent("");
+        setLink("");
+        setNewLink("");
         setFile(null);
+        setNewFile(null);
         setNotification({
           message:
-            result?.data?.message || "Successfully added a new announcements",
+            result?.data?.message || "Successfully added a new announcement",
           type: "success",
         });
 
         getContactData(id, true);
       } catch (error) {
-        setNotification({ message: "Error saving contact.", type: "error" });
+        setNotification({
+          message: "Error saving announcement.",
+          type: "error",
+        });
       }
     }
     setIsSubmitting(false);
@@ -249,7 +289,7 @@ const Announcement = () => {
                   className="h-full flex flex-col"
                 >
                   <Input
-                    id="contactTitle"
+                    id="announcementTitle"
                     value={title}
                     onChange={handleTitleChange}
                     error={titleError}
@@ -257,12 +297,20 @@ const Announcement = () => {
                     label={"Title"}
                     isRequired={true}
                   />
+
                   <textarea
-                    id="contactContent"
+                    id="announcementContent"
                     value={content}
                     onChange={handleContentChange}
                     placeholder={"Enter content..."}
                     className="py-2 px-4 font-normal rounded-xl border-2 border-transparent focus:ring-2 focus:ring-white/10 outline-none h-40 bg-[#323D4E]"
+                  />
+                  <Input
+                    id="announcementLink"
+                    value={link}
+                    onChange={handleLinkChange}
+                    placeholder={"Enter link..."}
+                    label={"Link"}
                   />
                   <div className="my-4 h-full">
                     <FileUpload
@@ -299,20 +347,27 @@ const Announcement = () => {
           content={
             <form className="h-full flex flex-col">
               <Input
-                id="newContactTitle"
-                value={title}
+                id="newAnnouncementTitle"
+                value={newTitle}
                 onChange={(e) => handleTitleChange(e, true)}
-                error={titleError}
+                error={newTitleError}
                 placeholder={"Enter title here"}
                 label={"Title"}
                 isRequired={true}
               />
               <textarea
-                id="newContactContent"
-                value={content}
+                id="newAnnouncementContent"
+                value={newContent}
                 onChange={handleContentChange}
                 placeholder={"Enter content..."}
                 className="py-2 px-4 font-normal rounded-xl border-2 border-transparent focus:ring-2 focus:ring-white/10 outline-none h-40 bg-[#323D4E]"
+              />
+              <Input
+                id="newAnnouncementLink"
+                value={newLink}
+                onChange={handleLinkChange}
+                placeholder={"Enter link here"}
+                label={"Link"}
               />
               <div className="my-4 h-full">
                 <FileUpload
@@ -324,9 +379,10 @@ const Announcement = () => {
             </form>
           }
           onClose={() => {
-            setTitle("");
-            setContent("");
-            setFile(null);
+            setNewTitle("");
+            setNewContent("");
+            setNewLink(""); // Clear link input
+            setNewFile(null);
             setOpenDialog(false);
           }}
           onFormSubmit={(e) => {
