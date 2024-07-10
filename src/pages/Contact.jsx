@@ -207,7 +207,7 @@ const Contact = () => {
           name: openDialog ? newContactName : contactName,
           phone: openDialog ? newPhoneNum : phoneNum,
           telegram: openDialog ? newTelegram : telegram,
-          img: filePath ?? selectedData?.img, // URL or path of the uploaded image
+          img: openDialog ? filePath : filePath ? filePath : selectedData?.img, // URL or path of the uploaded image
         };
 
         let result;

@@ -188,8 +188,8 @@ const Announcement = () => {
             ? filePath
             : filePath
             ? filePath
-            : selectedData?.image, // URL or path of the uploaded image
-          link: openDialog ? newLink : !openDialog ? link : selectedData.link, // Include link if provided
+            : selectedData?.image,
+          link: openDialog ? newLink : !openDialog ? link : selectedData.link,
         };
 
         let result;
@@ -277,7 +277,7 @@ const Announcement = () => {
           )}
         </div>
         {/* EDIT CONTENT */}
-        <div className="bg-[#283142] flex-1 p-10 rounded-3xl">
+        <div className="bg-[#283142] flex-1 p-10 rounded-3xl ">
           {isLoading ? (
             <Loading />
           ) : (
