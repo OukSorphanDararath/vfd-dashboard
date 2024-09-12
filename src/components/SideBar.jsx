@@ -2,6 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import pucLogo from "../assets/puc-logo.png";
 import needHelpInfo from "../assets/need-help.png";
+import { useHistory, useLocation } from "react-router-dom";
 
 const SideBar = () => {
   const sideBarContent = [
@@ -15,9 +16,14 @@ const SideBar = () => {
     { id: 6, title: "Admin Call", url: "/admin", icon: "" },
   ];
 
+  const history = useHistory();
+
   return (
     <div className="bg-[#283142] w-64 flex flex-col px-5 pb-4">
-      <div className="h-20 flex flex-col items-center mx-auto mt-4">
+      <div
+        className="h-20 flex flex-col items-center mx-auto mt-4"
+        onClick={() => history.push("/")}
+      >
         <img src={pucLogo} className="w-14 h-14" />
         <h1 className="text-center font-semibold text-lg mt-2">
           <NavLink to="/">FD Dashboard</NavLink>

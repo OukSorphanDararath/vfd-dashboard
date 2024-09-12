@@ -38,8 +38,8 @@ function App() {
                       contacts, or access the main setting.
                     </div>
                   </div>
-                  <div className="basis-1/4">
-                    <img src={illustration} className="w-64" />
+                  <div className="basis-1/4 flex flex-col">
+                    <img src={illustration} className="w-64 mt-auto" />
                   </div>
                 </div>
                 <div className="w-full basis-1/4 rounded-2xl bg-black/35">
