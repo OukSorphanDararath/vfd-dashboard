@@ -26,7 +26,7 @@ function App() {
           <Switch>
             <Route path="/" exact>
               <div className="flex flex-col w-full h-full gap-6 ">
-                <div className="w-full flex basis-3/4 bg-black/35 rounded-2xl p-10 gap-10">
+                <div className="w-full flex basis-3/4 bg-black/35 rounded-2xl p-12 gap-10">
                   <div className="basis-3/4 flex flex-col h-full gap-10">
                     <h1 className="text-5xl font-bold">Welcome Back,</h1>
                     <span className="text-4xl text-gray-400">
