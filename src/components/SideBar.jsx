@@ -1,5 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import pucLogo from "../assets/puc-logo.png";
+import needHelpInfo from "../assets/need-help.png";
 
 const SideBar = () => {
   const sideBarContent = [
@@ -15,11 +17,13 @@ const SideBar = () => {
 
   return (
     <div className="bg-[#283142] w-64 flex flex-col px-5 pb-4">
-      <div className="h-20 flex items-center mx-auto">
-        <h1 className="text-center font-semibold text-lg">
+      <div className="h-20 flex flex-col items-center mx-auto mt-4">
+        <img src={pucLogo} className="w-14 h-14" />
+        <h1 className="text-center font-semibold text-lg mt-2">
           <NavLink to="/">FD Dashboard</NavLink>
         </h1>
       </div>
+      <hr className="mt-8 text-gray-600"></hr>
       <ul className="flex flex-col gap-4 mt-4">
         {sideBarContent.map((item) => (
           <NavLink
@@ -32,10 +36,11 @@ const SideBar = () => {
           </NavLink>
         ))}
       </ul>
+      <img src={needHelpInfo} className="mt-auto" />
       {/* <div className="flex flex-col mt-auto gap-2">
         <span>Setting</span>
         <span>Logout</span>
-      </div> */}
+        </div> */}
     </div>
   );
 };

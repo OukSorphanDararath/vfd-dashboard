@@ -13,20 +13,41 @@ import Faculties from "./pages/Faculties";
 import Header from "./components/Header";
 import AdminCall from "./pages/AdminCall";
 import Announcement from "./pages/Announcement";
+import illustration from "./assets/illustration.png";
+import DateTime from "./components/DateTime";
 
 function App() {
   return (
     <div className="flex overflow-hidden h-screen w-screen">
       <SideBar />
       <div className=" w-full flex flex-col bg-[#1b2531]">
-        <Header />
+        {/* <Header /> */}
         <div className="h-full w-full p-6">
           <Switch>
             <Route path="/" exact>
-              <>
-                Welcome to PUC Virtual Front Desk, Please select your section to
-                process.
-              </>
+              <div className="flex flex-col w-full h-full gap-6 ">
+                <div className="w-full flex basis-3/4 bg-black/35 rounded-2xl p-10 gap-10">
+                  <div className="basis-3/4 flex flex-col h-full gap-10">
+                    <h1 className="text-5xl font-bold">Welcome Back,</h1>
+                    <span className="text-4xl text-gray-400">
+                      Please select an action from the main menu on the left to
+                      continue.
+                    </span>
+                    <div className="mt-auto text-gray-500">
+                      You can manage announcements, check the schedule, view
+                      contacts, or access the main setting.
+                    </div>
+                  </div>
+                  <div className="basis-1/4">
+                    <img src={illustration} className="w-64" />
+                  </div>
+                </div>
+                <div className="w-full basis-1/4 rounded-2xl bg-black/35">
+                  <div className="flex justify-end items-center">
+                    <DateTime />
+                  </div>
+                </div>
+              </div>
             </Route>
             <Route path="/announcement">
               <Announcement />
