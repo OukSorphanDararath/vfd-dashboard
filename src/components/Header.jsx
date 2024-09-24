@@ -65,7 +65,7 @@ const Header = () => {
   }, [location.pathname]);
 
   return (
-    <div className="bg-[rgb(40,49,66)] relative h-20">
+    <div className="bg-[rgb(40,49,66)] relative h-0">
       {showPopup && (
         <PopupCall onCancel={handleCancel} onPickUpCall={handlePickup} />
       )}

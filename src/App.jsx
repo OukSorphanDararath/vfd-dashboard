@@ -21,7 +21,7 @@ function App() {
     <div className="flex overflow-hidden h-screen w-screen">
       <SideBar />
       <div className=" w-full flex flex-col bg-[#1b2531]">
-        {/* <Header /> */}
+        <Header />
         <div className="h-full w-full p-6">
           <Switch>
             <Route path="/" exact>
