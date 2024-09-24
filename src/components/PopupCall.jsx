@@ -5,7 +5,7 @@ const PopupCall = ({ onCancel, onPickUpCall }) => {
   return (
     <div
       className="w-96 h-32 py-4 flex justify-evenly items-center bg-gray-400  bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-10 border-2 border-gray-400
-rounded-3xl absolute right-6 top-20 z-50"
+rounded-3xl absolute right-6 top-8 z-50"
     >
       <div className="flex flex-col">
         <span className="text-sm font-extralight">Incoming Call</span>
